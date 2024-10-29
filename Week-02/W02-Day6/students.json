@@ -1,0 +1,35 @@
+{
+    "students": [
+        {
+            "personalDetails": {
+                "name": "Ans",
+                "age": 24,
+                "gender": "male",
+                "email": "ans@example.com",
+                "address": {
+                    "country": "PAK",
+                    "city": "NEW GUJ",
+                    "location": "XYZ"
+                }
+            },
+            "academicRecord": {
+                "school": {
+                    "name": "Some High School",
+                    "yearOfCompletion": 2018,
+                    "grade": "B"
+                },
+                "intermediate": {
+                    "name": "Some Community College",
+                    "yearOfCompletion": 2020,
+                    "grade": "A"
+                },
+                "university": {
+                    "name": "Some University",
+                    "yearOfCompletion": 2024,
+                    "degree": "Bachelor of Computer Science",
+                    "grade": "A"
+                }
+            }
+        }
+    ]
+}

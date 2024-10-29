@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Button Click Tracker</title>
+</head>
+<body>
+    <button id="clickMe">Click me!</button>
+    <p>Button has been clicked <span id="clickCount">0</span> times.</p>
+
+    <script>
+        function ClickTracker() {
+            let count = 0;
+            return function() {
+                count++;
+                document.getElementById('clickCount').innerText = count; 
+            };
+        }
+        const trackClicks = ClickTracker();
+        document.getElementById('clickMe').addEventListener('click', trackClicks);
+    </script>
+</body>
+</html>

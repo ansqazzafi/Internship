@@ -1,0 +1,10 @@
+// setup for typescript
+// first installed typescript globally
+// npm install -g typescript
+// create a project in project directory create a file index.ts or something with .ts extension which you want to create
+// write 1st program
+// before run this in console you have to need to compile it to javascript file 
+// for compile typescript to javascript run the command 
+// tsc index.ts
+// now your file have been compiled to javascript file 
+// run the command node index.js
