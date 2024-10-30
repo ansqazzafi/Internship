@@ -7,6 +7,68 @@
                 "age": 23,
                 "gender": "Male",
                 "address": {
+                    "country": "",
+                    "city": "",
+                    "location": ""
+                }
+            },
+            "academicRecord": {
+                "school": {
+                    "name": "",
+                    "yearOfCompletion": 0,
+                    "grade": ""
+                },
+                "intermediate": {
+                    "name": "",
+                    "yearOfCompletion": 0,
+                    "grade": ""
+                },
+                "university": {
+                    "name": "",
+                    "yearOfCompletion": 0,
+                    "degree": "",
+                    "grade": ""
+                }
+            }
+        },
+        {
+            "personalDetails": {
+                "name": "Ex",
+                "email": "AnsQazzafi",
+                "age": 23,
+                "gender": "12",
+                "address": {
+                    "country": "",
+                    "city": "",
+                    "location": ""
+                }
+            },
+            "academicRecord": {
+                "school": {
+                    "name": "",
+                    "yearOfCompletion": 0,
+                    "grade": ""
+                },
+                "intermediate": {
+                    "name": "",
+                    "yearOfCompletion": 0,
+                    "grade": ""
+                },
+                "university": {
+                    "name": "",
+                    "yearOfCompletion": 0,
+                    "degree": "",
+                    "grade": ""
+                }
+            }
+        },
+        {
+            "personalDetails": {
+                "name": "Ans Qazzafi",
+                "email": "ansqazzafi@gmail.com",
+                "age": 22,
+                "gender": "Male",
+                "address": {
                     "country": "Pakistan",
                     "city": "Gujranwala",
                     "location": "PC"
@@ -15,50 +77,19 @@
             "academicRecord": {
                 "school": {
                     "name": "GPS",
-                    "yearOfCompletion": 2016,
-                    "grade": "A+"
-                },
-                "intermediate": {
-                    "name": "GOVT FMF",
                     "yearOfCompletion": 2018,
                     "grade": "A+"
                 },
+                "intermediate": {
+                    "name": "Govt",
+                    "yearOfCompletion": 2020,
+                    "grade": "A+"
+                },
                 "university": {
-                    "name": "GCU",
-                    "yearOfCompletion": 2023,
+                    "name": "IAS",
+                    "yearOfCompletion": 2025,
                     "degree": "CS",
                     "grade": "A+"
-                }
-            }
-        },
-        {
-            "personalDetails": {
-                "name": "ex",
-                "email": "ex@gmail.com",
-                "age": null,
-                "gender": "er",
-                "address": {
-                    "country": "er",
-                    "city": "ere",
-                    "location": "r"
-                }
-            },
-            "academicRecord": {
-                "school": {
-                    "name": "er",
-                    "yearOfCompletion": null,
-                    "grade": "er"
-                },
-                "intermediate": {
-                    "name": "er",
-                    "yearOfCompletion": null,
-                    "grade": "ere"
-                },
-                "university": {
-                    "name": "re",
-                    "yearOfCompletion": null,
-                    "degree": "ere",
-                    "grade": "re"
                 }
             }
         }
