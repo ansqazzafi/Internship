@@ -35,6 +35,16 @@ export class StudentService {
         return this.studentRepository.save(student)
       }
 
+      public async getAllStudents():Promise<Student[]>{
+        return await this.studentRepository.find()
+      }
+
+      public async getOneStudent(studentId:number):Promise<Student>{
+        return await this.studentRepository.findOne({
+          where:{id:studentId}
+        })
+      }
+
 
 
 }
