@@ -2,32 +2,63 @@
     "students": [
         {
             "personalDetails": {
-                "name": "Ans",
-                "age": 24,
-                "gender": "male",
-                "email": "ans@example.com",
+                "name": "ans",
+                "email": "ans@gmail.com",
+                "age": 23,
+                "gender": "Male",
                 "address": {
-                    "country": "PAK",
-                    "city": "NEW GUJ",
-                    "location": "XYZ"
+                    "country": "Pakistan",
+                    "city": "Gujranwala",
+                    "location": "PC"
                 }
             },
             "academicRecord": {
                 "school": {
-                    "name": "Some High School",
-                    "yearOfCompletion": 2018,
-                    "grade": "B"
+                    "name": "GPS",
+                    "yearOfCompletion": 2016,
+                    "grade": "A+"
                 },
                 "intermediate": {
-                    "name": "Some Community College",
-                    "yearOfCompletion": 2020,
-                    "grade": "A"
+                    "name": "GOVT FMF",
+                    "yearOfCompletion": 2018,
+                    "grade": "A+"
                 },
                 "university": {
-                    "name": "Some University",
-                    "yearOfCompletion": 2024,
-                    "degree": "Bachelor of Computer Science",
-                    "grade": "A"
+                    "name": "GCU",
+                    "yearOfCompletion": 2023,
+                    "degree": "CS",
+                    "grade": "A+"
+                }
+            }
+        },
+        {
+            "personalDetails": {
+                "name": "ex",
+                "email": "ex@gmail.com",
+                "age": null,
+                "gender": "er",
+                "address": {
+                    "country": "er",
+                    "city": "ere",
+                    "location": "r"
+                }
+            },
+            "academicRecord": {
+                "school": {
+                    "name": "er",
+                    "yearOfCompletion": null,
+                    "grade": "er"
+                },
+                "intermediate": {
+                    "name": "er",
+                    "yearOfCompletion": null,
+                    "grade": "ere"
+                },
+                "university": {
+                    "name": "re",
+                    "yearOfCompletion": null,
+                    "degree": "ere",
+                    "grade": "re"
                 }
             }
         }
