@@ -39,7 +39,7 @@ export class Student {
         },
         required: true,
     })
-    address: Address; // Keep the interface for type safety
+    address: Address; 
 
     @Prop({ required: false })
     phoneNumber: string;
@@ -51,7 +51,7 @@ export class Student {
         }],
         required: true,
     })
-    courses: Course[]; // Keep the interface for type safety
+    courses: Course[];
 
     @Prop({
         type: [{
