@@ -2,12 +2,15 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { Student, StudentDocument } from './students.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { CreateStudentDTO } from './create-student-dto';
+import { UpdateStudentDTO } from './update-student-dto';
 @Injectable()
 export class StudentsService {
     constructor(@InjectModel(Student.name) private studentModel: Model<StudentDocument>) { }
 
-    public async createStudent(studentData: Student): Promise<Student> {
-        const newStudent = await this.studentModel.create(studentData)
+    public async createStudent(createStudentDTO:CreateStudentDTO): Promise<Student> {
+        console.log(createStudentDTO);
+        const newStudent = await this.studentModel.create(createStudentDTO)
         return await newStudent.save()
     }
 
@@ -33,13 +36,13 @@ export class StudentsService {
     }
 
 
-    public async updateStudent(studentId: string, studentData: Partial<Student>): Promise<Student> {
+    public async updateStudent(studentId: string, updateStudentDTO: UpdateStudentDTO): Promise<Student> {
         const foundStudent = await this.studentModel.findById(studentId);
         if (!foundStudent) {
             throw new NotFoundException("Student not found");
         }
 
-        Object.assign(foundStudent, studentData);
+        Object.assign(foundStudent, updateStudentDTO);
         return await foundStudent.save();
     }
     

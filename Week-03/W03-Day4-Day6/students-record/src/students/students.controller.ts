@@ -1,12 +1,14 @@
 import { StudentsService } from './students.service';
 import { Student } from './students.entity';
 import { Controller, Post, Body, Get ,Put, Param, Delete} from '@nestjs/common';
-@Controller('students')
+import { CreateStudentDTO } from './create-student-dto';
+import { UpdateStudentDTO } from './update-student-dto';
+@Controller('students') 
 export class StudentsController {
     constructor(private readonly studentService :StudentsService){}
     @Post('createStudent')
-    public async createStudent(@Body() studentData: Student): Promise<Student> {
-        return await this.studentService.createStudent(studentData);
+    public async createStudent(@Body() createStudentDTO:CreateStudentDTO): Promise<Student> {
+        return await this.studentService.createStudent(createStudentDTO);
     }
 
 
@@ -29,8 +31,8 @@ export class StudentsController {
     @Put('updateStudent/:id')
     public async updateStudent(
         @Param('id') id: string,
-        @Body() studentData: Partial<Student>
+        @Body() updateStudentDTO: UpdateStudentDTO
     ): Promise<Student> {
-        return await this.studentService.updateStudent(id, studentData);
+        return await this.studentService.updateStudent(id, updateStudentDTO);
     }
 }
