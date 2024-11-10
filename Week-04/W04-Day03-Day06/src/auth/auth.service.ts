@@ -79,6 +79,27 @@ export class AuthService {
   }
 
 
+  public async logoutUser(id: string): Promise<{message:string , loggedOutUser:User}> {
+    let logOutUser = await this.userModel.findOneAndUpdate(
+      { _id: id },
+      { $unset: { refreshToken: 1 } },
+      { new: true },
+    );
+
+   logOutUser = await this.userModel
+    .findById(id)
+    .select('-password -refreshToken -borrowedBooks -_id -createdAt -updatedAt -__v');
+
+
+
+    return {
+      message:"User logged Out Succesfully",
+      loggedOutUser:logOutUser
+    };
+  }
+
+
+
 
   public async refreshToken(
     refreshToken: string,
