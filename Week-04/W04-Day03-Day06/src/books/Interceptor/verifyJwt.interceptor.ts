@@ -25,7 +25,7 @@ import {
           secret: process.env.ACCESS_KEY,
         });
         request.user = decoded; 
-        console.log(request.user , "userrrrrr");
+       
         
       } catch (error) {
         throw new UnauthorizedException('Invalid or expired token');

@@ -11,6 +11,7 @@ import {
   Query,
   UseInterceptors
 } from '@nestjs/common';
+
 import { GenreValidationPipe } from './CustomPipesForBooks/genre-validation.pipe';
 import { CreateBookDto } from './createbook.dto';
 import { Book } from './books.model';
@@ -20,7 +21,7 @@ import { UpdateBookDto } from './updateBook.dto';
 import { PaginationPipe } from './CustomPipesForBooks/pagination.pipe';
 import { CustomNotFoundException } from './CustomExceptions/customNotFountException.filter';
 import { VerifyJwtInterceptor } from './Interceptor/verifyJwt.interceptor';
-@Controller('books')
+@Controller('api/books')
 export class BooksController {
   constructor(private readonly bookService: BooksService) {}
 
@@ -30,8 +31,6 @@ export class BooksController {
   public async createBook(
     @Body() createBookDto: CreateBookDto,
   ): Promise<{ message: string; Book: Book }> {
-    console.log('genre', createBookDto.genre);
-
     return await this.bookService.createBook(createBookDto);
   }
 
