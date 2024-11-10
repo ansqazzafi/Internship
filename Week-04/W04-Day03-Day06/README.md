@@ -94,7 +94,7 @@ This **Library Management System** was developed to streamline library operation
    - **Parameters**: `:id` - Book ID
 
 4. **List All Books**
-   - **URL**: `http://localhost:3000/books?page=:page&limit=:limit`
+   - **URL**: `http://localhost:3000/books/list?page=page&limit=limit`
    - **Method**: `GET`
    - **Description**: Fetches a paginated list of books.
    - **Query Parameters**:
@@ -102,7 +102,7 @@ This **Library Management System** was developed to streamline library operation
      - `limit`: Number of items per page
 
 5. **Search Book by Name**
-   - **URL**: `http://localhost:3000/books/search?name=:name`
+   - **URL**: `http://localhost:3000/books/findByName?name=:name`
    - **Method**: `GET`
    - **Description**: Finds books by name or partial name.
    - **Query Parameters**: `name` - Book name
