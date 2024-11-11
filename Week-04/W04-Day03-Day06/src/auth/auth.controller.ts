@@ -16,7 +16,6 @@ import { HashPasswordPipe } from './CustomPipesForAuth/hashPassword.pipe';
 import { AuthService } from './auth.service';
 import { LoginUserDto } from './login-user-dto';
 import { Response, Request } from 'express';
-import { PassThrough } from 'stream';
 import { CheckRefreshTokenPipe } from './CustomPipesForAuth/check-refresh-token.pipe';
 
 @Controller('api/auth')
@@ -36,6 +35,7 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
   ): Promise<{ user: User; accessToken: string; refreshToken: string }> {
     const loggedUser = await this.authService.LoginUser(loginUserDto);
+    
 
     const Options = {
       httpOnly: true,
@@ -75,8 +75,6 @@ export class AuthController {
 
   @Post('logout')
   public async logoutUser(@Body() { userId }: { userId: string },  @Res({ passthrough: true }) response: Response): Promise<{message:string , loggedOutUser:User}>  {
-    console.log(userId);
-    
     const responseFromService = await this.authService.logoutUser(userId);
     const Options = {
       httpOnly: true,
@@ -90,7 +88,4 @@ export class AuthController {
     return responseFromService
 
   }
-
-
-
 }
