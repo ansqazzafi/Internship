@@ -13,6 +13,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
 import { LoginUserDto } from './login-user-dto';
 import * as bcrypt from 'bcrypt';
+import { error } from 'console';
 @Injectable()
 export class AuthService {
   constructor(
@@ -28,7 +29,7 @@ export class AuthService {
   }
 
 
-  private async generateAccessToken(user): Promise<string> {
+  public async generateAccessToken(user): Promise<string> {
     const payload = {
       id: user._id,
       firstName: user.firstName,
@@ -42,7 +43,7 @@ export class AuthService {
     return this.jwtService.signAsync(payload, { secret: secretKey, expiresIn });
   }
 
-  private async generateRefreshToken(user): Promise<string> {
+  public async generateRefreshToken(user): Promise<string> {
     const payload = { id: user._id };
     const secretKey = process.env.REFRESH_KEY;
     const expiresIn = process.env.REFRESH_KEY_EXPIRE || '30d';
@@ -90,7 +91,7 @@ export class AuthService {
 
 
     const newUser = user.toObject();
-    const loggedInUser = this.removeFields(newUser , ['password' , 'refreshToken'])
+    const loggedInUser = this.removeFields(newUser, ['password', 'refreshToken'])
 
     return {
       user: loggedInUser,
@@ -106,8 +107,11 @@ export class AuthService {
       { new: true },
     );
 
+    if (!user) {
+      throw new Error("user not found")
+    }
     const newUser = user.toObject();
-    const loggedOutUser = this.removeFields(newUser , ['password' , 'refreshToken' , 'createdAt' , 'updatedAt' , '__v'])
+    const loggedOutUser = this.removeFields(newUser, ['password', 'refreshToken', 'createdAt', 'updatedAt', '__v'])
 
     return {
       message: "User logged Out Succesfully",
