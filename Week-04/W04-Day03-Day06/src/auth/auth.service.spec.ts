@@ -2,9 +2,12 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AuthService } from './auth.service';
 import { getModelToken } from '@nestjs/mongoose';
 import { User } from './user.model';
-import { Model } from 'mongoose';
+import { Document, Model } from 'mongoose';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt'
+import { LoginUserDto } from './login-user-dto';
+import { RegisterUserDto } from './register-user-dto';
+import { ConflictException, Module } from '@nestjs/common';
 jest.mock('@nestjs/jwt');
 
 describe('AuthService', () => {
@@ -14,7 +17,10 @@ describe('AuthService', () => {
 
 
   const mockAuthService = {
-    findOneAndUpdate: jest.fn()
+    findOneAndUpdate: jest.fn(),
+    findOne:jest.fn(),
+    save: jest.fn(),
+    create:jest.fn()
   }
 
   beforeEach(async () => {
@@ -88,6 +94,90 @@ describe('AuthService', () => {
     it('should throw an error if the user is not found', async () => {
       model.findOneAndUpdate = jest.fn().mockResolvedValue(null);
       await expect(service.logoutUser('123')).rejects.toThrow('user not found');
+    });
+  });
+
+  describe('loginUser', () => {
+    it('should return a logged-in user and its Access and Refresh Tokens', async () => {
+      const mockLoggedInUser = {
+        _id: '123',
+        firstName: 'testuser',
+        lastName: 'testuser@example.com',
+        email: 'testuser@example.com',
+        password: 'hashedPassword',
+        refreshToken: 'someRefreshToken',
+        createdAt: '2024-01-01',
+        updatedAt: '2024-01-01',
+        __v: 0,
+        toObject: jest.fn().mockReturnValue({
+          _id: '123',
+          firstName: 'testuser',
+          lastName: 'testuser@example.com',
+          email: 'testuser@example.com',
+          createdAt: '2024-01-01',
+          updatedAt: '2024-01-01',
+          __v: 0,
+        }),
+        save: jest.fn().mockResolvedValue(this), 
+      };
+
+      const loginUserDto: LoginUserDto = { email: 'testuser@example.com', password: 'userPassword' };
+      jest.spyOn(model, 'findOne').mockResolvedValue(mockLoggedInUser); 
+      jest.spyOn(bcrypt, 'compare').mockResolvedValue(true); 
+      jest.spyOn(service, 'generateAccessToken').mockResolvedValue('accessToken'); 
+      jest.spyOn(service, 'generateRefreshToken').mockResolvedValue('refreshToken'); 
+      jest.spyOn(mockLoggedInUser, 'save').mockResolvedValue(mockLoggedInUser);
+
+      const result = await service.LoginUser({
+        email: loginUserDto.email,
+        password: loginUserDto.password,
+      });
+
+      expect(model.findOne).toHaveBeenCalledWith({ email: loginUserDto.email });
+      expect(bcrypt.compare).toHaveBeenCalledWith(loginUserDto.password, mockLoggedInUser.password);
+      expect(service.generateAccessToken).toHaveBeenCalledWith(mockLoggedInUser);
+      expect(service.generateRefreshToken).toHaveBeenCalledWith(mockLoggedInUser);
+      expect(mockLoggedInUser.save).toHaveBeenCalled();
+
+      expect(result).toEqual({
+        user: {
+          _id: '123',
+          firstName: 'testuser',
+          lastName: 'testuser@example.com',
+          email: 'testuser@example.com',
+          createdAt: '2024-01-01',
+          updatedAt: '2024-01-01',
+          __v: 0,
+        },
+        accessToken: 'accessToken',
+        refreshToken: 'refreshToken',
+      });
+    });
+
+    it('should throw UnauthorizedException if password is incorrect', async () => {
+      const mockLoggedInUser = {
+        _id: '123',
+        firstName: 'testuser',
+        lastName: 'testuser@example.com',
+        email: 'testuser@example.com',
+        password: 'hashedPassword',
+        refreshToken: 'someRefreshToken',
+      };
+
+      const loginUserDto: LoginUserDto = { email: 'testuser@example.com', password: 'wrongPassword' };
+
+      jest.spyOn(model, 'findOne').mockResolvedValue(mockLoggedInUser);
+      jest.spyOn(bcrypt, 'compare').mockResolvedValue(false); 
+
+      await expect(service.LoginUser(loginUserDto)).rejects.toThrow('password didnt matched');
+    });
+
+    it('should throw NotFoundException if user does not exist', async () => {
+      const loginUserDto: LoginUserDto = { email: 'nonexistent@example.com', password: 'userPassword' };
+
+      jest.spyOn(model, 'findOne').mockResolvedValue(null);
+
+      await expect(service.LoginUser(loginUserDto)).rejects.toThrow('User not found');
     });
   });
 });
