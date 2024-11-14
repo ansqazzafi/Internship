@@ -39,63 +39,6 @@ describe('AuthService', () => {
     model = module.get<Model<User>>(getModelToken(User.name));
   });
 
-  describe('logoutUser', () => {
-    it('should return the loggedOut User', async () => {
-      const mockLoggedOutUser = {
-        _id: '123',
-        firstName: 'testuser',
-        lastName: 'testuser@example.com',
-        email: 'testuser@example.com',
-        password: 'hashedPassword',
-        refreshToken: 'someRefreshToken',
-        createdAt: '2024-01-01',
-        updatedAt: '2024-01-01',
-        __v: 0,
-        toObject: jest.fn().mockReturnValue({
-          _id: '123',
-          firstName: 'testuser',
-          lastName: 'testuser@example.com',
-          email: 'testuser@example.com',
-        }),
-      };
-      jest.spyOn(model, 'findOneAndUpdate').mockResolvedValue(mockLoggedOutUser);
-      service.removeFields = jest.fn().mockReturnValue({
-        _id: '123',
-        firstName: 'testuser',
-        lastName: 'testuser@example.com',
-        email: 'testuser@example.com',
-      });
-
-      const result = await service.logoutUser('123');
-      expect(result).toEqual({
-        message: 'User logged Out Succesfully',
-        loggedOutUser: {
-          _id: '123',
-          firstName: 'testuser',
-          lastName: 'testuser@example.com',
-          email: 'testuser@example.com',
-        },
-      });
-
-      expect(model.findOneAndUpdate).toHaveBeenCalledWith(
-        { _id: '123' },
-        { $unset: { refreshToken: 1 } },
-        { new: true }
-      );
-      expect(service.removeFields).toHaveBeenCalledWith(mockLoggedOutUser.toObject(), [
-        'password',
-        'refreshToken',
-        'createdAt',
-        'updatedAt',
-        '__v',
-      ]);
-    });
-
-    it('should throw an error if the user is not found', async () => {
-      model.findOneAndUpdate = jest.fn().mockResolvedValue(null);
-      await expect(service.logoutUser('123')).rejects.toThrow('user not found');
-    });
-  });
 
   describe('loginUser', () => {
     it('should return a logged-in user and its Access and Refresh Tokens', async () => {
@@ -180,4 +123,64 @@ describe('AuthService', () => {
       await expect(service.LoginUser(loginUserDto)).rejects.toThrow('User not found');
     });
   });
+
+  describe('logoutUser', () => {
+    it('should return the loggedOut User', async () => {
+      const mockLoggedOutUser = {
+        _id: '123',
+        firstName: 'testuser',
+        lastName: 'testuser@example.com',
+        email: 'testuser@example.com',
+        password: 'hashedPassword',
+        refreshToken: 'someRefreshToken',
+        createdAt: '2024-01-01',
+        updatedAt: '2024-01-01',
+        __v: 0,
+        toObject: jest.fn().mockReturnValue({
+          _id: '123',
+          firstName: 'testuser',
+          lastName: 'testuser@example.com',
+          email: 'testuser@example.com',
+        }),
+      };
+      jest.spyOn(model, 'findOneAndUpdate').mockResolvedValue(mockLoggedOutUser);
+      service.removeFields = jest.fn().mockReturnValue({
+        _id: '123',
+        firstName: 'testuser',
+        lastName: 'testuser@example.com',
+        email: 'testuser@example.com',
+      });
+
+      const result = await service.logoutUser('123');
+      expect(result).toEqual({
+        message: 'User logged Out Succesfully',
+        loggedOutUser: {
+          _id: '123',
+          firstName: 'testuser',
+          lastName: 'testuser@example.com',
+          email: 'testuser@example.com',
+        },
+      });
+
+      expect(model.findOneAndUpdate).toHaveBeenCalledWith(
+        { _id: '123' },
+        { $unset: { refreshToken: 1 } },
+        { new: true }
+      );
+      expect(service.removeFields).toHaveBeenCalledWith(mockLoggedOutUser.toObject(), [
+        'password',
+        'refreshToken',
+        'createdAt',
+        'updatedAt',
+        '__v',
+      ]);
+    });
+
+    it('should throw an error if the user is not found', async () => {
+      model.findOneAndUpdate = jest.fn().mockResolvedValue(null);
+      await expect(service.logoutUser('123')).rejects.toThrow('user not found');
+    });
+  });
+
+  
 });
