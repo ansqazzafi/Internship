@@ -1,10 +1,13 @@
 import mongoose, { Schema, Document } from 'mongoose';
+
 interface UserInterface extends Document {
   firstName: string;
   lastName: string;
   email: string;
   DateOfBirth: Date;
-  Profession: string;
+  profession: string;
+  age:number
+  country: string
 }
 
 const userSchema: Schema = new Schema(
@@ -13,7 +16,9 @@ const userSchema: Schema = new Schema(
     lastName: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     DateOfBirth: { type: Date, required: true },
-    Profession: { type: String, required: true },
+    profession: { type: String, required: true },
+    age: { type: Number, required: false },
+    country: { type: String, required: true },
   },
   {
     timestamps: true, 
