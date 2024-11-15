@@ -36,4 +36,5 @@ const userSchema = new mongoose_1.Schema({
 }, {
     timestamps: true,
 });
+userSchema.index({ age: 1 });
 exports.User = mongoose_1.default.model('User', userSchema);

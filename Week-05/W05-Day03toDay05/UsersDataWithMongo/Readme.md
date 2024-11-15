@@ -125,3 +125,126 @@ const groupUsersByProfessionAndCountry = async () => {
 ---
 
 
+# Week05 Day05 Apply indexing on field and Measure performance before and after Indexing
+## Description
+This project includes basic MongoDB operations using Mongoose in a TypeScript environment, such as creating users, querying, and filtering data. It also includes an example of a query that runs without indexing and after indexing and the associated execution time.
+
+## Optimized Query Without Indexing
+The following function filters users with an `age` greater than 30. This query is executed **without any indexes** on the `age` field:
+
+```ts
+const NotoptimizedQuerryByIndexes = async () => {
+    const filterUserByAge = await User.find({ age: { $gt: 30 } }).explain('executionStats');
+    console.log(filterUserByAge);
+};
+```
+
+### Execution Time Without Indexing
+- **Execution Time**: When running this query without an index on the `age` field, MongoDB performs a **collection scan** (scans all documents in the collection), which can be slower, especially for large collections.
+- **Output**: The `.explain('executionStats')` method provides details on how MongoDB executed the query, including execution time and the number of documents scanned.
+
+```json
+{
+  executionStats: {
+    executionSuccess: true,
+    nReturned: 15,
+    executionTimeMillis: 1,
+    totalKeysExamined: 0,
+    totalDocsExamined: 41,
+    executionStages: {
+      isCached: false,
+      stage: 'COLLSCAN',
+      filter: [Object],
+      nReturned: 15,
+      executionTimeMillisEstimate: 0,
+      works: 42,
+      advanced: 15,
+      needTime: 26,
+      needYield: 0,
+      saveState: 0,
+      restoreState: 0,
+      isEOF: 1,
+      direction: 'forward',
+      docsExamined: 41
+    },
+}
+```
+
+it is examine 41 documents and return 15 this approach are not recommended for large data
+
+
+## Optimized Query With Indexing
+The following approaches define index in schema, filters users with an `age` greater than 30. This query is executed **with indexes** on the `age` field:
+
+
+```ts
+const userSchema: Schema = new Schema(
+  {
+    firstName: { type: String, required: true },
+    lastName: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    DateOfBirth: { type: Date, required: true },
+    profession: { type: String, required: true },
+    age: { type: Number, required: false },
+    country: { type: String, required: true },
+  },
+  {
+    timestamps: true, 
+  }
+);
+userSchema.index({age:1}) //defined index
+```
+
+```ts
+const optimizedQuerryByIndexes = async () => {
+    const filterUserByAge = await User.find({ age: { $gt: 30 } }).explain('executionStats');
+    console.log(filterUserByAge);
+};
+
+
+ const run = async () => {
+        await connectDB();
+        await User.createIndexes(); // indexes will be created
+        await optimizedQuerryByIndexes()
+        mongoose.disconnect();
+    };
+```
+### Execution Time Wth Indexing
+- **Execution Time**: When running this query with an index on the `age` field, MongoDB performs a **index scan** , which can be faster, especially for large collections.
+- **Output**: The `.explain('executionStats')` method provides details on how MongoDB executed the query, including execution time and the number of documents scanned.
+
+```json
+executionStats: {
+    executionSuccess: true,
+    nReturned: 15,
+    executionTimeMillis: 0,
+    totalKeysExamined: 15,
+    totalDocsExamined: 15,
+    executionStages: {
+      isCached: false,
+      stage: 'FETCH',
+      nReturned: 15,
+      executionTimeMillisEstimate: 0,
+      works: 16,
+      advanced: 15,
+      needTime: 0,
+      needYield: 0,
+      saveState: 0,
+      restoreState: 0,
+      isEOF: 1,
+      docsExamined: 15,
+      alreadyHasObj: 0,
+      inputStage: [Object]
+    },
+    allPlansExecution: []
+  },
+  command: { find: 'users', filter: { age: [Object] }, '$db': 'User' },
+  serverInfo: {
+    host: 'Brackets-10244',
+    port: 27017,
+    version: '8.0.1',
+    gitVersion: 'fcbe67d668fff5a370e2d87b9b1f74bc11bb7b94'
+  },
+```
+
+it is examined 15 documents and return 15 from BTree this approach are recommended for large data.

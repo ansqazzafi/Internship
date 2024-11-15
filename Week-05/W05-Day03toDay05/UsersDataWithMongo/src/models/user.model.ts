@@ -25,5 +25,8 @@ const userSchema: Schema = new Schema(
   }
 );
 
+
+userSchema.index({age:1})
+
 export const User = mongoose.model<UserInterface>('User', userSchema);
 

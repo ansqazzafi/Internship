@@ -91,13 +91,19 @@ const groupUserByProfessionAndCountry = () => __awaiter(void 0, void 0, void 0, 
     ]);
     console.log(result);
 });
+const optimizedQuerryByIndexes = () => __awaiter(void 0, void 0, void 0, function* () {
+    const filterUserByAge = yield user_model_1.User.find({ age: { $gt: 30 } }).explain('executionStats');
+    console.log(filterUserByAge);
+});
 const run = () => __awaiter(void 0, void 0, void 0, function* () {
     yield (0, db_connection_1.default)();
     // await filterUserQuerries()
     // await updateAgeForAllUsers()
     // await sortUserbyDOB()
     // await countNumberofUserInProfession()
-    yield groupUserByProfessionAndCountry();
+    // await groupUserByProfessionAndCountry()
+    yield user_model_1.User.createIndexes();
+    yield optimizedQuerryByIndexes();
     mongoose_1.default.disconnect();
 });
 run().catch((err) => {

@@ -50,65 +50,80 @@ const filterUserQuerries = async () => {
 
 
 const updateAgeForAllUsers = async () => {
-           await User.updateMany(
-            {},
-            [
-                {
-                    $set: {
-                        age: {
-                            $subtract: [
-                                new Date().getFullYear(),
-                                { $year: '$DateOfBirth' }
-                            ]
-                        }
+    await User.updateMany(
+        {},
+        [
+            {
+                $set: {
+                    age: {
+                        $subtract: [
+                            new Date().getFullYear(),
+                            { $year: '$DateOfBirth' }
+                        ]
                     }
                 }
-            ]
-        );
+            }
+        ]
+    );
 
-    };
+};
 
 
 const sortUserbyDOB = async () => {
-        const sortedUser = await User.aggregate([{
-            $sort: { age: 1 }
-        }])
-        console.log(sortedUser);
+    const sortedUser = await User.aggregate([{
+        $sort: { age: 1 }
+    }])
+    console.log(sortedUser);
 
-    }
-
-
- const countNumberofUserInProfession = async () => {
-        const UsersInProfession = await User.aggregate([{
-            $group: { _id: "$profession", count: { $sum: 1 } }
-        }])
-
-        console.log(UsersInProfession);
-
-    }
+}
 
 
-const groupUserByProfessionAndCountry = async()=>{
-        const result = await User.aggregate([
-            { $group: { _id: { country: "$country", profession: "$profession" }, count: { $sum: 1 } } }
-          ])
+const countNumberofUserInProfession = async () => {
+    const UsersInProfession = await User.aggregate([{
+        $group: { _id: "$profession", count: { $sum: 1 } }
+    }])
 
-          console.log(result);
-          
+    console.log(UsersInProfession);
 
-    }
+}
 
-    const run = async () => {
-        await connectDB();
-        // await filterUserQuerries()
-        // await updateAgeForAllUsers()
-        // await sortUserbyDOB()
-        // await countNumberofUserInProfession()
-        // await groupUserByProfessionAndCountry()
-        mongoose.disconnect();
-    };
 
-    run().catch((err) => {
-        console.error('Error during execution:', err);
-        mongoose.disconnect();
-    });
+const groupUserByProfessionAndCountry = async () => {
+    const result = await User.aggregate([
+        { $group: { _id: { country: "$country", profession: "$profession" }, count: { $sum: 1 } } }
+    ])
+
+    console.log(result);
+
+
+}
+
+//This function was created before the implementation of Indexes
+// const NotoptimizedQuerry = async()=>{
+//     const filterUserByAge = await User.find({age:{$gt:30}}).explain('executionStats')
+//     console.log(filterUserByAge);
+// }
+
+
+
+const optimizedQuerryByIndexes = async () => {
+    const filterUserByAge = await User.find({ age: { $gt: 30 } }).explain('executionStats')
+    console.log(filterUserByAge);
+}
+
+const run = async () => {
+    await connectDB();
+    // await filterUserQuerries()
+    // await updateAgeForAllUsers()
+    // await sortUserbyDOB()
+    // await countNumberofUserInProfession()
+    // await groupUserByProfessionAndCountry()
+    await User.createIndexes();
+    await optimizedQuerryByIndexes()
+    mongoose.disconnect();
+};
+
+run().catch((err) => {
+    console.error('Error during execution:', err);
+    mongoose.disconnect();
+});
