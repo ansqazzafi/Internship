@@ -113,3 +113,112 @@ In this task on **Day 01**, I integrated **MongoDB Atlas** with a **NestJS** app
 ---
 
 
+
+
+Certainly! Here's an updated version of the README with a clear explanation that the **author creation** is handled in the service after checking for the author's existence.
+
+---
+
+# Week06 Day02 Tasks
+## relationships between schemas (e.g., Book and Author).
+## Implement ref in schemas and use populate to retrieve related data.
+## Create a service to manage book and author data with methods for adding, retrieving, and updating records.
+
+
+### Endpoints:
+
+#### **1. Create Book**
+**POST** `api/book/create-book`
+
+Creates a new book with an associated author. If the author does not exist, the author will be created first.
+
+**Request Body**:
+```json
+{
+  "title": "Book Title",
+  "publishedDate": "2024-01-01T00:00:00Z",
+  "authorName": "Author Name",
+  "authorEmail": "author@example.com",
+  "bio": "Author bio",
+  "nationality": "Author nationality"
+}
+```
+
+- The service first **checks** if the author already exists by their `authorEmail`.
+- If the author exists, the book is created with the existing author.
+- If the author does **not** exist, the author is created in the **AuthorService**, and then the book is associated with the newly created author.
+
+---
+
+#### **2. Update Book**
+**PUT** `api/book/update-book/:bookId`
+
+Updates the details of a book by its `bookId`. If the book is not found, a `NotFoundException` is thrown.
+
+**Request Body** (Optional fields):
+```json
+{
+  "title": "Updated Book Title",
+  "publishedDate": "2024-01-01T00:00:00Z"
+}
+```
+
+- **Single Query Update** using `findOneAndUpdate` to avoid multiple database calls.
+  
+---
+
+#### **3. Get Book with Author**
+**GET** `/books/get-book/:bookId`
+
+Retrieves the book by its `bookId`, along with the populated author details (using `populate`).
+
+**Response Example**:
+```json
+{
+  "_id": "60f72b9f2b9dcb8b2a58f17c",
+  "title": "Book Title",
+  "publishedDate": "2024-01-01T00:00:00Z",
+  "authorId": {
+    "_id": "60f72b9f2b9dcb8b2a58f17d",
+    "authorName": "Author Name",
+    "authorEmail": "author@example.com",
+    "bio": "Author bio",
+    "nationality": "Author nationality"
+  },
+  "__v": 0
+}
+```
+
+- **Populated `authorId`**: The `authorId` field is populated with the author’s details using Mongoose’s `populate` method.
+
+---
+
+### **Service Logic for Author Creation**:
+
+- The **author creation** process is handled in the **BookService**.
+- **Author Existence Check**: The book service first checks if the author already exists by `authorEmail`.
+- **If Author Exists**: It directly uses the existing author to associate with the book.
+- **If Author Does Not Exist**: The service calls the **AuthorService** to create a new author based on the provided author data. Once the author is created, the book is associated with the newly created author.
+
+
+
+### Data Models:
+- **Book**: 
+  - `title: string`
+  - `publishedDate: Date`
+  - `authorId: ObjectId` (References the `Author` model)
+
+- **Author**:
+  - `authorName: string`
+  - `authorEmail: string`
+  - `bio: string`
+  - `nationality: string`
+
+---
+
+### DTOs:
+
+- **CreateBookDto**: For creating books and authors.
+- **UpdateBookDto**: For updating book fields (optional fields for update).
+
+---
