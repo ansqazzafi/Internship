@@ -1,0 +1,10 @@
+export enum Nationality {
+    PAKISTAN = 'PAKISTAN',
+    UNITED_STATES = 'UNITED_STATES',
+    AUSTRALIA='AUSTRALIA',
+    CANADA='CANADA',
+    GERMAN = 'GERMAN',
+    INDIAN = 'INDIAN',
+    ITALIAN = 'ITALIAN'
+  }
+  
