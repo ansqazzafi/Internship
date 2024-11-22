@@ -4,7 +4,6 @@ import { Book, BookDocument } from './book.schema';
 import { Model } from 'mongoose';
 import { CreateBookDto } from 'src/dto/createbook.dto';
 import { Author, AuthorDocument } from 'src/author/author.schema';
-import { AuthorService } from 'src/author/author.service';
 import { SuccessHandler } from 'src/interface/response.interface';
 import { ResponseHandler } from 'src/utility/success.response';
 import { UpdateBookDto } from 'src/dto/updatebook.dto';
@@ -69,20 +68,29 @@ export class BookService {
     }
 
 
-    public async getAllBooks(): Promise<SuccessHandler<Book[]>> {
+    public async getAllBooks(page: number, limit: number): Promise<SuccessHandler<Book[]>> {
         try {
-
-            const books = await this.bookModel.find().populate('authorId')
+            const skip = (page - 1) * limit;
+            const books = await this.bookModel.find().skip(skip).limit(limit);
+            const totalCount = await this.bookModel.countDocuments();
+            const totalPages = Math.ceil(totalCount / limit);
+    
             if (books.length === 0) {
-                throw new ForbiddenException("Books doesnt exists")
+                throw new ForbiddenException("No books available.");
             }
-
-            return this.responseHandler.successHandler(books, "Books Fetched Sucessfully")
-
+            return this.responseHandler.successHandler({
+                books,
+                pagination: {
+                    page,
+                    limit,
+                    totalBooks: totalCount,
+                    totalPages,
+                }
+            }, "Books fetched successfully.");
         } catch (error) {
-            throw new Error("Error during fetching all the books")
+            console.error("Error during fetching books:", error);
+            throw new Error("Error during fetching all the books.");
         }
-
     }
 
 
@@ -103,35 +111,95 @@ export class BookService {
         const session = await this.bookModel.db.startSession();
         session.startTransaction();
         try {
-            const deletedBook = await this.bookModel.findByIdAndDelete(bookId);
-    
+            const deletedBook = await this.bookModel.findByIdAndDelete(bookId).session(session);
+
             if (!deletedBook) {
                 throw new NotFoundException('Book not found');
             }
+
             const authorUpdate = await this.authorModel.findByIdAndUpdate(
-                deletedBook.authorId,  
-                { $pull: { Books: bookId } },  
-                { session, new: true }  
+                deletedBook.authorId,
+                { $pull: { Books: deletedBook._id } },
+                { session, new: true }
             );
-    
+
             if (!authorUpdate) {
                 throw new NotFoundException('Author not found or book not associated with author');
             }
-    
+
             await session.commitTransaction();
-    
+
             return this.responseHandler.successHandler(deletedBook, 'Book deleted successfully');
         } catch (error) {
-
+            if (error instanceof NotFoundException) {
+                throw error
+            }
             await session.abortTransaction();
             throw new Error('Error during deleting the book: ' + error.message);
         } finally {
             session.endSession();
         }
-
-
-
-
     }
+
+
+    public async searchBooks(search: string, genre?: string, page: number = 1, limit: number = 10): Promise<SuccessHandler<Book[]>> {
+        try {
+            console.log(search, genre, page, limit, "search");
+            const aggregation = await this.bookModel.aggregate([
+                {
+                    $match: {
+                        $and: [
+                            {
+                                BookTitle: {
+                                    $regex: search,
+                                    $options: 'i',
+                                },
+                            },
+                            genre && {
+                                genre: genre.toUpperCase(),
+
+                            },
+                        ],
+                    },
+                },
+                {
+                    $facet: {
+                        books: [
+                            { $skip: (page - 1) * limit },
+                            { $limit: limit },
+                        ],
+                        totalCount: [
+                            { $count: "count" }
+                        ],
+                    },
+                },
+            ]);
+
+            const books = aggregation[0]?.books || [];
+            const totalCount = aggregation[0]?.totalCount[0]?.count || 0;
+            const totalPages = Math.ceil(totalCount / limit);
+
+            if (books.length === 0) {
+                throw new NotFoundException("No books found with the given title.");
+            }
+
+            return await this.responseHandler.successHandler({
+                books,
+                pagination: {
+                    page,
+                    limit,
+                    totalBooks: totalCount,
+                    totalPages,
+                }
+            }, "Books with the given title have been fetched successfully.");
+        } catch (error) {
+            if (error instanceof NotFoundException) {
+                throw error;
+            }
+            console.error('Error during book search:', error);
+            throw new Error("Error occurred while searching for books.");
+        }
+    }
+
 
 }

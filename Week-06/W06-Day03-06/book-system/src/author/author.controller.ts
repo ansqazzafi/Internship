@@ -1,26 +1,28 @@
-import { Body, Controller, Get, Post, Param, Patch, Query } from '@nestjs/common';
+import { Body, Controller, Get, Post, Param, Patch, Delete,  Query, Search } from '@nestjs/common';
 import { Author } from './author.schema';
 import { createAuthorDto } from 'src/dto/createauthor.dto';
 import { AuthorService } from './author.service';
 import { SuccessHandler } from 'src/interface/response.interface';
 import { UpdateAuthorDto } from 'src/dto/updateauthor.dto';
+import { Nationality } from 'src/enums/nationality.enum';
 
 @Controller('api/v1/authors')
 export class AuthorController {
     constructor(private readonly authorService: AuthorService) { }
 
 
-    @Get('search')  
+    @Get()  
     public async getAuthorsByName(
-        @Query('author-name') authorName: string
+        @Query('search') search: string,
+        @Query('nationality') nationality?:Nationality
     ): Promise<SuccessHandler<Author[]>> {
-        console.log("Entered author name", authorName);
-        return await this.authorService.getAuthorsByName(authorName);
-    }
-
-    @Get()
-    public async getAuthors(): Promise<SuccessHandler<Author[]>> {
-        return await this.authorService.getAuthors();
+        if(search){
+            console.log("Entered search name", search);
+            return await this.authorService.getAuthorsByName(search , nationality);
+        }
+        else{
+            return await this.authorService.getAuthors()
+        }
     }
     @Get(':authorId')
     public async getAuthor(@Param('authorId') authorId: string): Promise<SuccessHandler<Author>> {
@@ -39,5 +41,11 @@ export class AuthorController {
     ): Promise<SuccessHandler<Author>> {
         console.log("emterrrr");
         return await this.authorService.updateAuthor(authorId, updateAuthorDto);
+    }
+
+
+    @Delete(':authorId')
+    public async deleteAuthor(@Param('authorId') authorId:string):Promise<SuccessHandler<Author>>{
+        return await this.authorService.deleteAuthorAndBooks(authorId)
     }
 }

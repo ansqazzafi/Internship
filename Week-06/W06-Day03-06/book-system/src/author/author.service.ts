@@ -6,9 +6,12 @@ import { createAuthorDto } from 'src/dto/createauthor.dto';
 import { ResponseHandler } from 'src/utility/success.response';
 import { SuccessHandler } from 'src/interface/response.interface';
 import { UpdateAuthorDto } from 'src/dto/updateauthor.dto';
+import { BookDocument, Book } from 'src/book/book.schema';
+import { Nationality } from 'src/enums/nationality.enum';
 @Injectable()
 export class AuthorService {
   constructor(@InjectModel(Author.name) private readonly authorModel: Model<AuthorDocument>,
+    @InjectModel(Book.name) private bookModel: Model<BookDocument>,
     private readonly responseHandler: ResponseHandler) { }
 
   public async createAuthor(createAuthorDto: createAuthorDto): Promise<SuccessHandler<Author[]>> {
@@ -32,7 +35,7 @@ export class AuthorService {
       if (authors.length === 0) {
         throw new ConflictException("No Author exist")
       }
-      return this.responseHandler.successHandler(authors, "Authors fetched successfully")
+      return this.responseHandler.successHandler(authors, "Authors fetched successfully!")
     } catch (error) {
       if (error instanceof ConflictException) {
         throw error
@@ -61,6 +64,7 @@ export class AuthorService {
     console.log(authorId, updateAuthorDto, "gfsdsg");
 
     try {
+
 
       const updateFields: any = {};
       if (updateAuthorDto.authorName) {
@@ -112,19 +116,29 @@ export class AuthorService {
     }
   }
 
-  public async getAuthorsByName(authorName: string): Promise<SuccessHandler<Author[]>> {
-
+  public async getAuthorsByName(search: string, nationality?: Nationality): Promise<SuccessHandler<Author[]>> {
     try {
-      console.log("service ," , authorName);
-      const authors = await this.authorModel.find({
-        authorName: { $regex: authorName, $options: 'i' } 
-      }).exec();
-
-      console.log(authors  , "dfasaaa");
+      console.log(search );
       
+      const authors = await this.authorModel.find([
+        {
+          $match: {
+            $and: [
+              {
+                authorName: {
+                  $regex: search,
+                  $options: 'i',
+                },
+              },
+              nationality &&
+              { nationality: { $in: [nationality] } }
+            ]
+          }
+        }
+      ]).exec();
 
       if (authors.length === 0) {
-        throw new NotFoundException(`No authors found with the name "${authorName}"`);
+        throw new NotFoundException(`No authors found with the name "${search}"`);
       }
 
       return this.responseHandler.successHandler(authors, "Authors fetched successfully");
@@ -133,9 +147,51 @@ export class AuthorService {
       if (error instanceof NotFoundException) {
         throw error;
       }
-      
       throw new Error("There was an error during fetching authors: " + error.message);
     }
   }
+
+
+
+  public async deleteAuthorAndBooks(authorId: string): Promise<SuccessHandler<Author>> {
+    const session = await this.bookModel.db.startSession();
+    session.startTransaction();
+    try {
+      console.log("Entereddd :", authorId);
+      const author = await this.authorModel.findById(authorId).session(session)
+      if (!author) {
+        throw new NotFoundException('Author not found');
+      }
+      console.log("Auther Found:", author);
+
+      const bookIds = author.Books;
+      if (!bookIds || bookIds.length === 0) {
+        console.log('No books associated with this author, deleting author');
+        const deletedAuthor = await this.authorModel.findByIdAndDelete(authorId, { session });
+        if (!deletedAuthor) {
+          throw new NotFoundException('Failed to delete author');
+        }
+      } else {
+        const deletedAuthor = await this.authorModel.findByIdAndDelete(authorId, { session });
+        if (!deletedAuthor) {
+          throw new NotFoundException('Failed to delete author');
+        }
+        await this.bookModel.deleteMany(
+          { _id: { $in: bookIds } },
+          { session }
+        )
+      }
+      await session.commitTransaction();
+      return this.responseHandler.successHandler(Author, 'Author and associated books deleted successfully');
+    } catch (error) {
+      if (error instanceof NotFoundException) { throw error }
+      await session.abortTransaction();
+      console.error('Error during author and books deletion:', error);
+      throw new Error('Error during deleting the author and associated books: ' + error.message);
+    } finally {
+      session.endSession();
+    }
+  }
+
 
 }
