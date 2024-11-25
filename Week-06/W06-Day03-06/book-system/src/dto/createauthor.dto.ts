@@ -1,5 +1,5 @@
-import { IsEmail, IsEnum, IsNotEmpty, IsString, IsArray } from "class-validator";
-import { Nationality } from "src/enums/nationality.enum";
+import { IsEmail, IsEnum, IsNotEmpty, IsString, IsArray , ArrayNotEmpty} from "class-validator";
+import { Nationality } from "../enums/nationality.enum";
 
 export class createAuthorDto {
 
@@ -18,8 +18,8 @@ export class createAuthorDto {
     bio: string;
 
 
-    @IsNotEmpty()
     @IsArray()
+    @ArrayNotEmpty()
     @IsEnum(Nationality, { each: true }) 
     nationality: Nationality[];
 

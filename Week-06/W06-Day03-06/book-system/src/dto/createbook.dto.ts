@@ -1,6 +1,6 @@
 import { Type } from 'class-transformer';
 import { IsNotEmpty, IsString, IsDate, IsMongoId, IsArray, IsEnum, IsNumber, IsObject } from 'class-validator';
-import { Genre } from 'src/enums/genre.enum';
+import { Genre } from '../enums/genre.enum';
 
 export class CreateBookDto {
   

@@ -1,5 +1,5 @@
 import { IsArray, IsEnum, IsOptional, IsString, IsEmail } from 'class-validator';
-import { Nationality } from 'src/enums/nationality.enum';
+import { Nationality } from '../enums/nationality.enum';
 
 export class UpdateAuthorDto {
   @IsOptional()

@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { Author } from 'src/author/author.schema';
-import { Genre } from 'src/enums/genre.enum';
+import { Author } from '../author/author.schema';
+import { Genre } from '../enums/genre.enum';
 
 @Schema({ timestamps: true })
 export class Book {

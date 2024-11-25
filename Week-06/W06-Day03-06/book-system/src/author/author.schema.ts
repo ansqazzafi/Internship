@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { Book } from 'src/book/book.schema';
-import { Nationality } from 'src/enums/nationality.enum';
+import { Book } from '../book/book.schema';
+import { Nationality } from '../enums/nationality.enum';
 @Schema({ timestamps: true })
 export class Author {
   @Prop({ required: true })
