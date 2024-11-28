@@ -3,8 +3,8 @@ import { StripeService } from './stripe.service';
 import { StripeController } from './stripe.controller';
 
 @Module({
-    imports:[],
-    providers:[StripeService],
-    controllers:[StripeController]
+  imports: [],
+  providers: [StripeService],
+  controllers: [StripeController],
 })
 export class StripeModule {}
