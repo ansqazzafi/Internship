@@ -4,18 +4,19 @@ import Stripe from 'stripe';
 
 @Injectable()
 export class StripeService {
-  private stripe: Stripe;
+    private stripe: Stripe;
 
-  constructor() {
-    this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: '2024-11-20.acacia', 
-    });
-  }
+    constructor() {
+        this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+            apiVersion: '2024-11-20.acacia',
+        });
+    }
 
-  async createPaymentIntent(amount: number, currency: string): Promise<Stripe.PaymentIntent> {
-    return this.stripe.paymentIntents.create({
-      amount,
-      currency,
-    });
-  }
+    async createPaymentIntent(amount: number, currency: string): Promise<Stripe.PaymentIntent> {
+        return this.stripe.paymentIntents.create({
+            amount,
+            currency,
+        });
+    }
+
 }
