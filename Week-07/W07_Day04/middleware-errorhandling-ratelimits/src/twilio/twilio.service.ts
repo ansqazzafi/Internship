@@ -16,7 +16,7 @@ export class TwilioService {
   async sendVerifcationSms(to: string) {
     try {
       const randomNumber = Math.floor(Math.random() * (9999 - 1000 + 1)) + 1000;
-      const message = `Your Verification code are : ${randomNumber}`
+      const message = `Your Verification code are : ${randomNumber}`;
       const response = await this.twilioClient.messages.create({
         body: message,
         from: process.env.TWILIO_PHONE_NUMBER,
@@ -25,8 +25,10 @@ export class TwilioService {
       return response;
     } catch (error) {
       console.error('Error during sending SMS:', error);
-      throw new CustomError(`Failed to send SMS to ${to}. Error: ${error.message || 'Unknown error'}`, 401)
+      throw new CustomError(
+        `Failed to send SMS to ${to}. Error: ${error.message || 'Unknown error'}`,
+        401,
+      );
     }
   }
-
 }

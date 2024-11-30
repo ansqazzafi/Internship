@@ -5,9 +5,9 @@ import { Request, Response, NextFunction } from 'express';
 export class ErrorHandlingMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: NextFunction) {
     try {
-      next(); 
+      next();
     } catch (err) {
-      throw new ForbiddenException("There is an Error During Access the Path")
+      throw new ForbiddenException('There is an Error During Access the Path');
     }
   }
 }

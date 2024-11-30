@@ -28,7 +28,8 @@ export class StripeService {
     } catch (error) {
       console.error('Error creating payment intent:', error);
       throw new CustomError(
-        `Failed to create payment intent. Error: ${error.message || 'Unknown error'}`, 404
+        `Failed to create payment intent. Error: ${error.message || 'Unknown error'}`,
+        404,
       );
     }
   }

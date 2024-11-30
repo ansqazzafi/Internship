@@ -15,7 +15,7 @@ import { log } from 'console';
 
 @Controller('stripe')
 export class StripeController {
-  constructor(private readonly stripeService: StripeService) { }
+  constructor(private readonly stripeService: StripeService) {}
   @Post('create-payment-intent')
   async createPaymentIntent(@Body() createPaymentDto: CreatePaymentDto) {
     const { amount, currency } = createPaymentDto;

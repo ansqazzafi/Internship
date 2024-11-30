@@ -11,20 +11,28 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 @Module({
   imports: [
-    ThrottlerModule.forRoot([{ // add rate limit to all route globally
-      ttl: 60,
-      limit: 3,
-    }]),
+    ThrottlerModule.forRoot([
+      {
+        // add rate limit to all route globally
+        ttl: 60,
+        limit: 3,
+      },
+    ]),
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
-    })
+    }),
   ],
-  controllers: [AppController , TwilioController , StripeController],
-  providers: [{
-    provide: APP_GUARD,
-    useClass: ThrottlerGuard
-  }, AppService , TwilioService , StripeService],
+  controllers: [AppController, TwilioController, StripeController],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+    AppService,
+    TwilioService,
+    StripeService,
+  ],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
