@@ -47,8 +47,8 @@ export class UserSubscriptionController {
     const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
     try {
-      await this.stripeService.handleStripeWebhook(payload, signature, endpointSecret);
-      return { received: true };
+      const response = await this.stripeService.handleStripeWebhook(payload, signature, endpointSecret);
+      return this.responseHandler.successHandler(response , "Subscription Activated Sucessfully");
     } catch (error) {
       console.error('Error handling webhook:', error);
       throw new CustomError('Webhook failed', 403);

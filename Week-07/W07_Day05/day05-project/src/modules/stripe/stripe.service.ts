@@ -7,6 +7,7 @@ import { UserSubscription } from '../user-subscription/user-subscription.schema'
 import { Model } from 'mongoose';
 import { CreateCustomerDto } from '../user-subscription/dto/create-customer.dto';
 import { SuccessHandler } from 'interface/response.interface';
+import { ResponseHandler } from 'utility/success.response';
 
 @Injectable()
 export class StripeService {
@@ -14,6 +15,7 @@ export class StripeService {
 
   constructor(
     private readonly twilioService: TwilioService,
+    private readonly responseHandler: ResponseHandler,
     @InjectModel(UserSubscription.name)
     private userSubscriptionModel: Model<UserSubscription>,
   ) {
@@ -22,7 +24,7 @@ export class StripeService {
     });
   }
 
-  async createCustomer(CreateCustomerDto: CreateCustomerDto) {
+  async createCustomer(CreateCustomerDto: CreateCustomerDto): Promise<object> {
     try {
       const customer = await this.stripe.customers.create({
         ...CreateCustomerDto,
@@ -129,7 +131,7 @@ export class StripeService {
     payload: any,
     signature: string,
     endpointSecret: string,
-  ): Promise<void> {
+  ): Promise<object> {
     let event: Stripe.Event;
     try {
       event = this.stripe.webhooks.constructEvent(payload, signature, endpointSecret);
@@ -153,8 +155,8 @@ export class StripeService {
         console.log('Price ID not found in the invoice.');
         throw new CustomError("Price id not found", 404);
       }
-      this.updateDetails(customerId, subscription, PriceId)
-      return
+      await this.updateDetails(customerId, subscription, PriceId)
+      return {data:null}
     }
     if (event.type === 'invoice.payment_failed') {
       throw new CustomError("Payment failed", 403)
