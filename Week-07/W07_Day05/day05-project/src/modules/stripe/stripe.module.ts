@@ -7,5 +7,5 @@ import { StripeService } from './stripe.service';
   controllers: [],
   providers: [TwilioService, StripeService],
 })
-export class StripeModule {}
+export class StripeModule { }
 

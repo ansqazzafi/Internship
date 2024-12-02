@@ -6,6 +6,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { UserSubscription } from '../user-subscription/user-subscription.schema';
 import { Model } from 'mongoose';
 import { CreateCustomerDto } from '../user-subscription/dto/create-customer.dto';
+import { SuccessHandler } from 'interface/response.interface';
 
 @Injectable()
 export class StripeService {
@@ -44,7 +45,7 @@ export class StripeService {
 
   async createSubscription(
     createSubscriptionDto,
-  ): Promise<Stripe.Subscription> {
+  ): Promise<object> {
     const { stripeCustomerId, PriceId } = createSubscriptionDto;
 
     try {
@@ -52,12 +53,7 @@ export class StripeService {
       if (!customer) {
         throw new CustomError('Customer does not exist', 401);
       }
-      const paymentMethod = await this.createPaymentMethod();
-      if (!paymentMethod) {
-        throw new CustomError('Failed to create payment method', 401);
-      }
-      console.log(paymentMethod, 'created paymentmethod');
-      await this.attachPaymentMethodToCustomer(customer.id, paymentMethod.id);
+
       const subscription = await this.stripe.subscriptions.create({
         customer: customer.id,
         items: [
@@ -65,68 +61,24 @@ export class StripeService {
             price: PriceId,
           },
         ],
+        payment_behavior: 'default_incomplete',
+        expand: ['latest_invoice.payment_intent'],
       });
-      const planName = this.getPlanNameFromPriceId(PriceId);
-      const user = await this.userSubscriptionModel.findOneAndUpdate(
-        { stripeCustomerId: customer.id },
-        {
-          subscriptionId: subscription.id,
-          status: subscription.status,
-          priceId: PriceId,
-          startDate: new Date(subscription.current_period_start * 1000),
-          endDate: new Date(subscription.current_period_end * 1000),
-        },
-        { new: true },
-      );
+      const latestInvoice = subscription.latest_invoice as Stripe.Invoice;
+      const paymentIntent = latestInvoice.payment_intent as Stripe.PaymentIntent;
+      if (!paymentIntent || !paymentIntent.client_secret) {
+        throw new CustomError('Payment intent client secret not found', 404);
+      }
 
-      console.log(user, user.phone);
+      const clientSecret = paymentIntent.client_secret;
 
-      const message = `Hi ${user.name},\nYour subscription to the ${planName} plan has been successfully created!\nStart Date: ${user.startDate.toLocaleDateString()}\nEnd Date: ${user.endDate.toLocaleDateString()}\nThank you for subscribing!`;
-      await this.twilioService.SendConfirmationSms(user.phone, message);
-      return subscription;
+      return { clientSecret: clientSecret }
     } catch (error) {
       console.error('Error creating subscription: ', error);
       throw new CustomError('Failed to create subscription', 404);
     }
   }
 
-  async createPaymentMethod() {
-    try {
-      const paymentMethod = await this.stripe.paymentMethods.create({
-        type: 'card',
-        card: {
-          token: 'tok_visa',
-        },
-      });
-
-      console.log('Payment Method Created:', paymentMethod);
-      return paymentMethod;
-    } catch (error) {
-      console.error('Error creating payment method: ', error);
-      throw new CustomError(`Failed to create payment method. Error`, 404);
-    }
-  }
-
-  async attachPaymentMethodToCustomer(
-    customerId: string,
-    paymentMethodId: string,
-  ) {
-    try {
-      await this.stripe.paymentMethods.attach(paymentMethodId, {
-        customer: customerId,
-      });
-
-      await this.stripe.customers.update(customerId, {
-        invoice_settings: {
-          default_payment_method: paymentMethodId,
-        },
-      });
-      console.log('attached');
-    } catch (error) {
-      console.error('Error attaching payment method to customer: ', error);
-      throw new CustomError('Failed to attach payment method to customer', 404);
-    }
-  }
 
   getPlanNameFromPriceId(priceId: string): string {
     const planNames = {
@@ -137,4 +89,70 @@ export class StripeService {
 
     return planNames[priceId] || 'Unknown Plan';
   }
+
+
+
+  async handleStripeWebhook(
+    payload: any,
+    signature: string,
+    endpointSecret: string,
+  ): Promise<void> {
+    let event: Stripe.Event;
+    try {
+      event = this.stripe.webhooks.constructEvent(payload, signature, endpointSecret);
+    } catch (err) {
+      console.error('Error verifying webhook signature:', err);
+      throw new CustomError('Webhook signature verification failed', 401);
+    }
+
+    if (event.type === 'invoice.payment_succeeded') {
+      const invoice = event.data.object as Stripe.Invoice;
+      const customerId = invoice.customer as string;
+      if (!invoice.subscription || typeof invoice.subscription === 'string') {
+        console.log('No valid subscription found in the invoice.');
+        throw new CustomError("Subscription not found", 404);
+      }
+
+      const subscription = invoice.subscription as Stripe.Subscription;
+      const PriceId = invoice.lines.data.length > 0 ? invoice.lines.data[0].price.id : null;
+
+      if (!PriceId) {
+        console.log('Price ID not found in the invoice.');
+        throw new CustomError("Price id not found", 404);
+      }
+
+      try {
+        const customerResponse = await this.stripe.customers.retrieve(customerId);
+        const user = await this.userSubscriptionModel.findOneAndUpdate(
+          { stripeCustomerId: customerId },
+          {
+            subscriptionId: subscription.id,
+            status: subscription.status,
+            priceId: PriceId,
+            startDate: new Date(subscription.current_period_start * 1000),
+            endDate: new Date(subscription.current_period_end * 1000),
+          },
+          { new: true },
+        );
+
+        const customer = customerResponse as Stripe.Customer;
+        const phoneNumber = customer.phone;
+
+        if (phoneNumber) {
+          const planName = this.getPlanNameFromPriceId(PriceId);
+          const message = `Hi ${user.name},\nYour subscription to the ${planName} plan has been successfully created! Thank you for subscribing!`;
+
+          await this.twilioService.SendConfirmationSms(phoneNumber, message);
+        } else {
+          console.log('No phone number found for customer.');
+        }
+      } catch (error) {
+        console.error('Error retrieving customer or updating subscription:', error);
+        throw new CustomError("Error retrieving customer", 404);
+      }
+    }
+  }
+
+
+
 }

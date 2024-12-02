@@ -15,8 +15,9 @@ This project provides subscription management with **Twilio**, **Stripe**, and *
 4. **UserSubscription Module**: Handles storing user data and subscription status in MongoDB.
 
 5. **Endpoints**:
-   - `POST /create-customer`: Creates a new customer.
-   - `POST /create-subscription`: Creates a new subscription.
+   - `POST user-subscription/customers`: Creates a new customer.
+   - `POST user-subscription/subscriptions`: Creates a new subscription.it will return a clientSecret to frontend to verify Payment after verified it will be activated
+   - `POST user-subscription` : handleWebhook: it will send a confirmation message to customer that Plan has been activated and saved remaining details to Database
 
 6. After successful subscription, user receives a confirmation message.
 
