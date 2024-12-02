@@ -91,6 +91,39 @@ export class StripeService {
   }
 
 
+  async updateDetails(customerId: string, subscription, PriceId: string): Promise<void> {
+    try {
+      const customerResponse = await this.stripe.customers.retrieve(customerId);
+      const user = await this.userSubscriptionModel.findOneAndUpdate(
+        { stripeCustomerId: customerId },
+        {
+          subscriptionId: subscription.id,
+          status: subscription.status,
+          priceId: PriceId,
+          startDate: new Date(subscription.current_period_start * 1000),
+          endDate: new Date(subscription.current_period_end * 1000),
+        },
+        { new: true },
+      );
+
+      const customer = customerResponse as Stripe.Customer;
+      const phoneNumber = customer.phone;
+
+      if (phoneNumber) {
+        const planName = this.getPlanNameFromPriceId(PriceId);
+        const message = `Hi ${user.name},\nYour subscription to the ${planName} plan has been successfully created! Thank you for subscribing!`;
+        await this.twilioService.SendConfirmationSms(phoneNumber, message);
+      } else {
+        console.log('No phone number found for customer.');
+      }
+    } catch (error) {
+      console.error('Error retrieving customer or updating subscription:', error);
+      throw new CustomError("Error retrieving customer", 404);
+    }
+
+  }
+
+
 
   async handleStripeWebhook(
     payload: any,
@@ -120,39 +153,11 @@ export class StripeService {
         console.log('Price ID not found in the invoice.');
         throw new CustomError("Price id not found", 404);
       }
-
-      try {
-        const customerResponse = await this.stripe.customers.retrieve(customerId);
-        const user = await this.userSubscriptionModel.findOneAndUpdate(
-          { stripeCustomerId: customerId },
-          {
-            subscriptionId: subscription.id,
-            status: subscription.status,
-            priceId: PriceId,
-            startDate: new Date(subscription.current_period_start * 1000),
-            endDate: new Date(subscription.current_period_end * 1000),
-          },
-          { new: true },
-        );
-
-        const customer = customerResponse as Stripe.Customer;
-        const phoneNumber = customer.phone;
-
-        if (phoneNumber) {
-          const planName = this.getPlanNameFromPriceId(PriceId);
-          const message = `Hi ${user.name},\nYour subscription to the ${planName} plan has been successfully created! Thank you for subscribing!`;
-
-          await this.twilioService.SendConfirmationSms(phoneNumber, message);
-        } else {
-          console.log('No phone number found for customer.');
-        }
-      } catch (error) {
-        console.error('Error retrieving customer or updating subscription:', error);
-        throw new CustomError("Error retrieving customer", 404);
-      }
+      this.updateDetails(customerId, subscription, PriceId)
+      return
+    }
+    if (event.type === 'invoice.payment_failed') {
+      throw new CustomError("Payment failed", 403)
     }
   }
-
-
-
 }
